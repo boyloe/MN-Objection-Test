@@ -1,9 +1,10 @@
 const express = require('express')
-const app = express()
+const app = express();
 
-const cors = require('cors')
+const cors = require('cors');
 const bodyParser = require('body-parser')
 const bCrypt = require('bcrypt')
+const { Model } = require('objection')
 
 const PORT = process.env.PORT || 4000
 
@@ -13,6 +14,25 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
+class User extends Model {
+    static tableName = "users";
+
+    static relationMappings = {
+        items: {
+            relation: Model.ManyToManyRelation,
+            modelClass: Item,
+            join: {
+                from: 'user.id',
+                through: {
+                    from: 'cart.user_id',
+                    to: 'cart.item_id'
+                },
+                to: 'item.id'
+            }
+        }
+    };
+}
+
 
 app.get('/users', (_,response) => {
     database('users').select()
@@ -21,7 +41,6 @@ app.get('/users', (_,response) => {
 
 
 app.post('/users', (request, response) => {
-    console.log('request body', request.body);
     bCrypt.hash(request.body.password, 12, (error, hashed_password) => {         
         database('users')
             .insert({
@@ -35,4 +54,4 @@ app.post('/users', (request, response) => {
 
 
 
-app.listen(PORT, console.log(`listening on port ${PORT}`))
+app.listen(PORT)
