@@ -2,7 +2,7 @@ const { table } = require("../database");
 
 exports.up =  function(knex) {
     return knex.schema.createTable('items', table =>  {
-        table.increments("id")
+        table.increments()
         table.string('name')
 
     })
